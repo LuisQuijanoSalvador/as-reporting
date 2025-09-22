@@ -42,10 +42,12 @@
                 <th>Ruta</th>
                 <th>Tipo Ruta</th>
                 <th>C.Costo</th>
-                <th>Cod1</th>
-                <th>Cod2</th>
-                <th>Cod3</th>
-                <th>Cod4</th>
+                @if ($datos->first()->idCliente !== 1036)
+                    <th scope="col">Cod1</th>
+                    <th scope="col">Cod2</th>
+                    <th scope="col">Cod3</th>
+                    <th scope="col">Cod4</th>
+                @endif
                 <th>Moneda</th>
                 <th>Neto</th>
                 <th>Inafecto</th>
@@ -66,10 +68,12 @@
                     <td>{{ $item->Ruta }}</td>
                     <td>{{ $item->TipoRuta }}</td>
                     <td>{{ $item->CentroCosto }}</td>
-                    <td>{{ $item->Cod1 }}</td>
-                    <td>{{ $item->Cod2 }}</td>
-                    <td>{{ $item->Cod3 }}</td>
-                    <td>{{ $item->Cod4 }}</td>
+                    @if ($item->idCliente !== 1036)
+                        <td>{{ $item->Cod1 }}</td>
+                        <td>{{ $item->Cod2 }}</td>
+                        <td>{{ $item->Cod3 }}</td>
+                        <td>{{ $item->Cod4 }}</td>
+                    @endif
                     <td>{{ $item->Moneda }}</td>
                     <td class="text-end">{{ number_format($item->TarifaNeta, 2) }}</td>
                     <td class="text-end">{{ number_format($item->Inafecto, 2) }}</td>

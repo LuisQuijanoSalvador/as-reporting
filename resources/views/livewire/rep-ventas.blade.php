@@ -46,6 +46,10 @@
             </div>
         </div>
     </div>
+    @php
+        $clienteId = $datos->first()->idCliente ?? null;
+    @endphp
+
 
     {{-- Tabla de resultados --}}
     <div class="table-responsive">
@@ -61,10 +65,12 @@
                     <th scope="col">Ruta</th>
                     <th scope="col">Tipo Ruta</th>
                     <th scope="col">C.Costo</th>
-                    <th scope="col">Cod1</th>
-                    <th scope="col">Cod2</th>
-                    <th scope="col">Cod3</th>
-                    <th scope="col">Cod4</th>
+                    @if ($clienteId !== 1036)
+                        <th scope="col">Cod1</th>
+                        <th scope="col">Cod2</th>
+                        <th scope="col">Cod3</th>
+                        <th scope="col">Cod4</th>
+                    @endif
                     <th scope="col">Moneda</th>
                     <th scope="col">Tarifa Neta</th>
                     <th scope="col">Inafecto</th>
@@ -85,10 +91,12 @@
                         <td>{{ $item->Ruta }}</td>
                         <td>{{ $item->TipoRuta }}</td>
                         <td>{{ $item->CentroCosto }}</td>
-                        <td>{{ $item->Cod1 }}</td>
-                        <td>{{ $item->Cod2 }}</td>
-                        <td>{{ $item->Cod3 }}</td>
-                        <td>{{ $item->Cod4 }}</td>
+                        @if ($item->idCliente !== 1036)
+                            <td>{{ $item->Cod1 }}</td>
+                            <td>{{ $item->Cod2 }}</td>
+                            <td>{{ $item->Cod3 }}</td>
+                            <td>{{ $item->Cod4 }}</td>
+                        @endif
                         <td>{{ $item->Moneda }}</td>
                         <td>{{ number_format($item->TarifaNeta, 2) }}</td>
                         <td>{{ number_format($item->Inafecto, 2) }}</td>

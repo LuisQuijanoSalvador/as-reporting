@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RepVentasExport;
 use App\Exports\VentasExport;
+use App\Exports\VentasTritonExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Empresa;
 use App\Models\Cliente;
@@ -26,7 +27,7 @@ class RepVentas extends Component
     public $selectedEmpresaId = null;
     public $empresas;
     public $userRole;
-    public $idCliente;
+    public $idCliente = null;
 
     // Título del reporte para la exportación
     public $reporteTitulo = 'REPORTE DE COMPRAS';
@@ -43,8 +44,9 @@ class RepVentas extends Component
     public function mount()
     {
         $this->userRole = Auth::user()->role;
-        $this->idCliente = Auth::user()->empresa_id;
-
+        if ($this->userRole === 'user') {
+            $this->idCliente = Auth::user()->empresa_id;
+        }
         // Si el usuario es admin, carga la lista de empresas
         if ($this->userRole === 'admin') {
             $this->empresas = Empresa::all();
@@ -126,18 +128,23 @@ class RepVentas extends Component
         $empresa_id = $request->input('empresa');
         $fecha_inicial = $request->input('fecha_inicial');
         $fecha_final = $request->input('fecha_final');
-      
-        return Excel::download(new VentasExport($user, $this->selectedEmpresaId, $this->fechaInicio, $this->fechaFin), 'reporte_compras_' . date('Y-m-d') . '.xlsx');
-        // Lógica para exportar a Excel
-        // return Excel::download(new VentasExport(
-        //     $this->fechaInicio,
-        //     $this->fechaFin,
-        //     $this->search,
-        //     $this->userRole,
-        //     $this->idCliente,
-        //     $this->selectedEmpresaId,
-        //     $this->reporteTitulo
-        // ), 'reporte_compras.xlsx');
+        
+        if($this->idCliente){
+            if($this->idCliente == 1036){
+                return Excel::download(new VentasTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_compras_' . date('Y-m-d') . '.xlsx');
+            } else{
+                return Excel::download(new VentasExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_compras_' . date('Y-m-d') . '.xlsx');
+            }
+        }else{
+            if($this->selectedEmpresaId){
+                if($this->selectedEmpresaId == 1036){
+                    return Excel::download(new VentasTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_compras_' . date('Y-m-d') . '.xlsx');
+                } else{
+                    return Excel::download(new VentasExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_compras_' . date('Y-m-d') . '.xlsx');
+                }
+            }
+        
+        }
     }
 
     public function exportarPDF()
