@@ -7,6 +7,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\UsuarioIndex;
 use App\Livewire\ReporteVentas;
 use App\Livewire\RepVentas;
+use App\Livewire\ReporteBoletos;
 use App\Livewire\LogosClientes;
 
 // Ruta raíz
@@ -36,4 +37,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reportes/ventas/pdf', [ReporteController::class, 'exportPDF'])->name('reportes.ventas.pdf');
 
     Route::get('/reporte-ventas', RepVentas::class)->middleware('auth')->name('repventas');
+    Route::get('/reporte-boletos', ReporteBoletos::class)->middleware('auth')->name('repboletos');
 });

@@ -191,6 +191,13 @@
                                 <p>Reportes de Compras</p>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('repboletos') }}" class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>Reportes de Boletos</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
