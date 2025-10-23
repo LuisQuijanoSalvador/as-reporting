@@ -9,6 +9,7 @@ use App\Livewire\ReporteVentas;
 use App\Livewire\RepVentas;
 use App\Livewire\ReporteBoletos;
 use App\Livewire\LogosClientes;
+use App\Livewire\ClientFieldConfigurator;
 
 // Ruta raíz
 Route::get('/', function () {
@@ -29,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/usuarios', UsuarioIndex::class)->name('usuarios.index');
         Route::get('/gestion-logos', LogosClientes::class)->name('logos.gestion');
+        Route::get('/campos', ClientFieldConfigurator::class)->name('gestion.campos');
     });
     
     // Rutas para reportes

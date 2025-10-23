@@ -42,11 +42,20 @@
                 <th>Ruta</th>
                 <th>Tipo Ruta</th>
                 <th>C.Costo</th>
-                @if ($datos->first()->idCliente !== 1036)
-                    <th scope="col">Cod1</th>
-                    <th scope="col">Cod2</th>
-                    <th scope="col">Cod3</th>
-                    <th scope="col">Cod4</th>
+                @if ($clientConfig->cod1_is_visible)
+                    <th scope="col">{{ $clientConfig->cod1_label ?? 'Cod1' }}</th>
+                @endif
+                
+                @if ($clientConfig->cod2_is_visible)
+                    <th scope="col">{{ $clientConfig->cod2_label ?? 'Cod2' }}</th>
+                @endif
+                
+                @if ($clientConfig->cod3_is_visible)
+                    <th scope="col">{{ $clientConfig->cod3_label ?? 'Cod3' }}</th>
+                @endif
+                
+                @if ($clientConfig->cod4_is_visible)
+                    <th scope="col">{{ $clientConfig->cod4_label ?? 'Cod4' }}</th>
                 @endif
                 <th>Moneda</th>
                 <th>Neto</th>
@@ -68,10 +77,19 @@
                     <td>{{ $item->Ruta }}</td>
                     <td>{{ $item->TipoRuta }}</td>
                     <td>{{ $item->CentroCosto }}</td>
-                    @if ($item->idCliente !== 1036)
+                    @if ($clientConfig->cod1_is_visible)
                         <td>{{ $item->Cod1 }}</td>
+                    @endif
+                    
+                    @if ($clientConfig->cod2_is_visible)
                         <td>{{ $item->Cod2 }}</td>
+                    @endif
+                    
+                    @if ($clientConfig->cod3_is_visible)
                         <td>{{ $item->Cod3 }}</td>
+                    @endif
+                    
+                    @if ($clientConfig->cod4_is_visible)
                         <td>{{ $item->Cod4 }}</td>
                     @endif
                     <td>{{ $item->Moneda }}</td>

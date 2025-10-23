@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Carbon\Carbon;
+use App\Models\ClientFieldConfiguration;
 
 class VentasExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents, WithDrawings
 {
@@ -26,14 +27,16 @@ class VentasExport implements FromCollection, WithHeadings, ShouldAutoSize, With
     protected $fecha_final;
     public $logoClientePath = null;
     public $clienteId;
+    protected $clientConfig;
 
-    public function __construct(User $user, $empresa_id = null, $cliente_id = null, $fecha_inicial = null, $fecha_final = null)
+    public function __construct(User $user, ClientFieldConfiguration $clientConfig, $empresa_id = null, $cliente_id = null, $fecha_inicial = null, $fecha_final = null)
     {
         $this->user = $user;
         $this->empresa_id = $empresa_id;
         $this->clienteId = $cliente_id;
         $this->fecha_inicial = $fecha_inicial;
         $this->fecha_final = $fecha_final;
+        $this->clientConfig = $clientConfig;
     }
 
     public function collection()
@@ -65,11 +68,22 @@ class VentasExport implements FromCollection, WithHeadings, ShouldAutoSize, With
                 'TipoRuta' => $venta->TipoRuta,
                 'CentroCosto' => $venta->CentroCosto,
             ];
-            if ($venta->idCliente !== 1036) {
-                $fila['Cod1'] = $venta->Cod1;
-                $fila['Cod2'] = $venta->Cod2;
-                $fila['Cod3'] = $venta->Cod3;
-                $fila['Cod4'] = $venta->Cod4;
+            
+            // Añadir Cod1 si está visible
+            if ($this->clientConfig->cod1_is_visible) {
+                $fila[] = $venta->Cod1;
+            }
+            // Añadir Cod2 si está visible
+            if ($this->clientConfig->cod2_is_visible) {
+                $fila[] = $venta->Cod2;
+            }
+            // Añadir Cod3 si está visible
+            if ($this->clientConfig->cod3_is_visible) {
+                $fila[] = $venta->Cod3;
+            }
+            // Añadir Cod4 si está visible
+            if ($this->clientConfig->cod4_is_visible) {
+                $fila[] = $venta->Cod4;
             } 
             $fila['Moneda'] = $venta->Moneda;
             $fila['TarifaNeta'] = $venta->TarifaNeta;
@@ -97,9 +111,27 @@ class VentasExport implements FromCollection, WithHeadings, ShouldAutoSize, With
             'CentroCosto',
         ];
     
-        if ($this->clienteId !== 1036) {
-            $base = array_merge($base, ['Cod1', 'Cod2', 'Cod3', 'Cod4']);
+        $codColumns = [];
+    
+        // Si Cod1 es visible según la configuración, lo añadimos con su etiqueta
+        if ($this->clientConfig->cod1_is_visible) {
+            $codColumns[] = $this->clientConfig->cod1_label ?? 'Cod1';
         }
+        // Si Cod2 es visible según la configuración, lo añadimos con su etiqueta
+        if ($this->clientConfig->cod2_is_visible) {
+            $codColumns[] = $this->clientConfig->cod2_label ?? 'Cod2';
+        }
+        // Si Cod3 es visible según la configuración, lo añadimos con su etiqueta
+        if ($this->clientConfig->cod3_is_visible) {
+            $codColumns[] = $this->clientConfig->cod3_label ?? 'Cod3';
+        }
+        // Si Cod4 es visible según la configuración, lo añadimos con su etiqueta
+        if ($this->clientConfig->cod4_is_visible) {
+            $codColumns[] = $this->clientConfig->cod4_label ?? 'Cod4';
+        }
+        
+        // Fusionamos las columnas base con las columnas CodX
+        $base = array_merge($base, $codColumns);
     
         $base = array_merge($base, [
             'Moneda',

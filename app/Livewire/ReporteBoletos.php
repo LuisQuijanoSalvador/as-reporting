@@ -17,6 +17,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Empresa;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use App\Models\ClientFieldConfiguration;
 
 class ReporteBoletos extends Component
 {
@@ -30,6 +31,7 @@ class ReporteBoletos extends Component
     public $empresas;
     public $userRole;
     public $idCliente = null;
+    public $clientConfig;
 
     // Título del reporte para la exportación
     public $reporteTitulo = 'REPORTE DE BOLETOS';
@@ -62,6 +64,33 @@ class ReporteBoletos extends Component
         if (empty($this->fechaInicio)) {
             $this->fechaInicio = now()->subMonth()->format('Y-m-d');
         }
+        $this->loadClientConfiguration();
+    }
+
+    public function loadClientConfiguration()
+    {
+        // Determinar qué ID de cliente usar
+        $clientIdToUse = $this->idCliente;
+
+        if ($this->userRole === 'admin' && $this->selectedEmpresaId) {
+            $clientIdToUse = $this->selectedEmpresaId;
+        }
+
+        if ($clientIdToUse) {
+            // Cargar la configuración. Usamos firstOrNew por si el cliente no tiene una configuración guardada
+            $this->clientConfig = ClientFieldConfiguration::firstOrNew(
+                ['client_id' => $clientIdToUse], 
+                [ // Valores por defecto si es nuevo
+                    'cod1_is_visible' => false, 'cod1_label' => 'Cod1',
+                    'cod2_is_visible' => false, 'cod2_label' => 'Cod2',
+                    'cod3_is_visible' => false, 'cod3_label' => 'Cod3',
+                    'cod4_is_visible' => false, 'cod4_label' => 'Cod4',
+                ]
+            );
+        } else {
+            // Si no hay cliente (ej: admin sin seleccionar), inicializamos con valores predeterminados
+            $this->clientConfig = new ClientFieldConfiguration();
+        }
     }
 
     // Resetea la página de paginación al cambiar los filtros
@@ -83,6 +112,7 @@ class ReporteBoletos extends Component
     public function updatingSelectedEmpresaId()
     {
         $this->resetPage();
+        $this->loadClientConfiguration(); // Recargar la configuración
     }
 
     // Lógica de renderizado
@@ -116,9 +146,10 @@ class ReporteBoletos extends Component
         }
 
         $datos = $query->paginate(3); // Paginación de 15 registros por página
-
+        $this->loadClientConfiguration();
         return view('livewire.reporte-boletos', [
             'datos' => $datos,
+            'clientConfig' => $this->clientConfig,
         ]);
     }
 
@@ -130,21 +161,33 @@ class ReporteBoletos extends Component
         $empresa_id = $request->input('empresa');
         $fecha_inicial = $request->input('fecha_inicial');
         $fecha_final = $request->input('fecha_final');
-        // dd('IdCLiente: ' . $this->idCliente . '/// IdEmpresa: ' . $this->selectedEmpresaId);
-        if($this->idCliente){
-            if($this->idCliente == 1036){
-                return Excel::download(new BoletosTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
-            } else{
-                return Excel::download(new BoletosExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
-            }
-        }else{
-            if($this->selectedEmpresaId){
-                if($this->selectedEmpresaId == 1036){
-                    return Excel::download(new BoletosTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
-                } else{
-                    return Excel::download(new BoletosExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
-                }
-            }
+        
+        $clientIdToUse = $this->idCliente ?? $this->selectedEmpresaId;
+
+        $clientConfig = ClientFieldConfiguration::firstOrNew(
+            ['client_id' => $clientIdToUse],
+            [ // Asegurar valores por defecto si no existe
+                'cod1_is_visible' => false, 'cod1_label' => 'Cod1',
+                'cod2_is_visible' => false, 'cod2_label' => 'Cod2',
+                'cod3_is_visible' => false, 'cod3_label' => 'Cod3',
+                'cod4_is_visible' => false, 'cod4_label' => 'Cod4',
+            ]
+        );
+        
+        if($clientIdToUse){
+            // if($this->idCliente == 1036){
+            //     return Excel::download(new BoletosTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
+            // } else{
+                return Excel::download(new BoletosExport($user, $clientConfig, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
+        //     }
+        // }else{
+        //     if($this->selectedEmpresaId){
+        //         if($this->selectedEmpresaId == 1036){
+        //             return Excel::download(new BoletosTritonExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
+        //         } else{
+        //             return Excel::download(new BoletosExport($user, $this->selectedEmpresaId,$this->idCliente, $this->fechaInicio, $this->fechaFin), 'reporte_boletos_' . date('Y-m-d') . '.xlsx');
+        //         }
+        //     }
         
         }
     }
@@ -213,6 +256,7 @@ class ReporteBoletos extends Component
             'empresa' => $empresa,
             'logoEmpresa' => $logoEmpresaPath,
             'logoCliente' => $logoClientePath,
+            'clientConfig' => $this->clientConfig,
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(function () use ($pdf) {

@@ -178,9 +178,18 @@
 
                         @if(auth()->user()->role === 'admin')
                             <li class="nav-item">
-                                <a href="{{ route('logos.gestion') }}" class="nav-link {{ request()->is('gestion-logos*') ? 'active' : '' }}">
+                                <a href="{{ route('logos.gestion') }}" class="nav-link {{ request()->is('logos.gestion*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-image"></i>
                                     <p>Logos</p>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if(auth()->user()->role === 'admin')
+                            <li class="nav-item">
+                                <a href="{{ route('gestion.campos') }}" class="nav-link {{ request()->is('gestion.campos*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-layer-group"></i>
+                                    <p>Campos</p>
                                 </a>
                             </li>
                         @endif
